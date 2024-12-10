@@ -12,7 +12,7 @@ public class SampleController {
 
     @GetMapping("/order/{orderId}")
     public String getOrder(@PathVariable("orderId") String id){
-        log.info("Get some order");
+        log.info("Get some order : "  +id);
         return "orderId:" + id + ", orderAmount:1000";
     }
 
