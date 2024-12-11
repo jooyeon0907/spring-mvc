@@ -1,23 +1,42 @@
 package com.example.WebSample.controller;
 
 import com.example.WebSample.dto.ErrorResponse;
+import com.example.WebSample.exception.ErroCode;
+import com.example.WebSample.exception.WebSampleException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
 @Slf4j
 @RestController // 웹에서 요청이 들어오는 것을 받아주기위해 @RestController 어노테이션 추가
 public class SampleController {
 
     @GetMapping("/order/{orderId}")
-    public String getOrder(@PathVariable("orderId") String id) throws IllegalAccessException {
+    public String getOrder(@PathVariable("orderId") String id) throws IllegalAccessException, SQLIntegrityConstraintViolationException {
         log.info("Get some order : "  +id);
 
         if ("500".equals(id)) {
-            throw new IllegalAccessException("500 is not valid order Id");
+            throw new WebSampleException
+					(ErroCode.TOO_BIG_ID_ERROR,
+					"500 is not valid order Id");
         }
+
+        if ("3".equals(id)) {
+            throw new WebSampleException
+					(ErroCode.TOO_SMALL_ID_ERROR,
+					"3 is not valid order Id");
+        }
+
+        if ("4".equals(id)) {
+            throw new SQLIntegrityConstraintViolationException(
+					"Duplicated insertion was tired."
+			);
+        }
+
         return "orderId:" + id + ", orderAmount:1000";
     }
 
@@ -27,11 +46,33 @@ public class SampleController {
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .header("newHeader", "Some Value")
-                .body(new ErrorResponse("INVALID_ACCESS",
+                .body(new ErrorResponse(ErroCode.TOO_BIG_ID_ERROR,
                 "IllegalAccessException is occurred."));
 
     }
+
+	@ExceptionHandler(WebSampleException.class)
+    public ResponseEntity<ErrorResponse> handleWebSampleException(WebSampleException e){
+        log.error("WebSampleException is occurred.", e);
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(e.getErrorCode(),
+                "WebSampleException is occurred."));
+
+    }
+
+	@ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(Exception e){
+        log.error("WebSampleException is occurred.", e);
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse(ErroCode.INTERNAL_SERVER_ERROR,
+                "WebSampleException is occurred."));
+
+    }
+
 
     @DeleteMapping("/order/{orderId}")
     public String deleteOrder(@PathVariable("orderId") String id){
