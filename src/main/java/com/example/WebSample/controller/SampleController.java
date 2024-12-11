@@ -11,8 +11,12 @@ public class SampleController {
 
 
     @GetMapping("/order/{orderId}")
-    public String getOrder(@PathVariable("orderId") String id){
+    public String getOrder(@PathVariable("orderId") String id) throws IllegalAccessException {
         log.info("Get some order : "  +id);
+
+        if ("500".equals(id)) {
+            throw new IllegalAccessException("500 is not valid order Id");
+        }
         return "orderId:" + id + ", orderAmount:1000";
     }
 
@@ -26,13 +30,13 @@ public class SampleController {
     public String getOrderWithRequestParam(
             @RequestParam(value = "orderId", required = false, defaultValue = "defaultId") String id,
             @RequestParam("orderAmount") Integer amount){
-        log.info("Get some order");
+        log.info("getOrderWithRequestParam");
         return "orderId:" + id + ", orderAmount:" + amount;
     }
 
     @PutMapping("/order")
     public String createOrder(){
-        log.info("Create order");
+        log.info("Put Create order");
         return "order created -> orderId:2, orderAmount:1000";
     }
 
@@ -40,7 +44,7 @@ public class SampleController {
     public String createOrder(
             @RequestBody CreateOrderRequest createOrderRequest,
             @RequestHeader("userAccountId") String userAccountId){
-        log.info("Create order : " + createOrderRequest +
+        log.info("Post Create order : " + createOrderRequest +
                 ", amount : " + userAccountId);
         return "orderId:" + createOrderRequest.getOrderId() +
                 ", orderAmount:" + createOrderRequest.getOrderAmount();
