@@ -1,14 +1,14 @@
 package com.example.WebSample.controller;
 
+import com.example.WebSample.dto.ErrorResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
-@RestController
+@RestController // 웹에서 요청이 들어오는 것을 받아주기위해 @RestController 어노테이션 추가
 public class SampleController {
-
-
 
     @GetMapping("/order/{orderId}")
     public String getOrder(@PathVariable("orderId") String id) throws IllegalAccessException {
@@ -18,6 +18,15 @@ public class SampleController {
             throw new IllegalAccessException("500 is not valid order Id");
         }
         return "orderId:" + id + ", orderAmount:1000";
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(IllegalAccessException.class)
+    public ErrorResponse handleIllegalAccessException(IllegalAccessException e){
+        log.error("IllegalAccessException is occurred.", e);
+
+        return new ErrorResponse("INVALID_ACCESS",
+                "IllegalAccessException is occurred.");
     }
 
     @DeleteMapping("/order/{orderId}")
