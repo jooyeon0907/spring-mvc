@@ -4,6 +4,7 @@ import com.example.WebSample.dto.ErrorResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -20,13 +21,16 @@ public class SampleController {
         return "orderId:" + id + ", orderAmount:1000";
     }
 
-    @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(IllegalAccessException.class)
-    public ErrorResponse handleIllegalAccessException(IllegalAccessException e){
+    public ResponseEntity<ErrorResponse> handleIllegalAccessException(IllegalAccessException e){
         log.error("IllegalAccessException is occurred.", e);
 
-        return new ErrorResponse("INVALID_ACCESS",
-                "IllegalAccessException is occurred.");
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .header("newHeader", "Some Value")
+                .body(new ErrorResponse("INVALID_ACCESS",
+                "IllegalAccessException is occurred."));
+
     }
 
     @DeleteMapping("/order/{orderId}")
